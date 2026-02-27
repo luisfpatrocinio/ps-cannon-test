@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://1yk0trxbqtwb"]
+
+[ext_resource type="PackedScene" uid="uid://baqvuq55mpabk" path="res://assets/Prop_Cannon.fbx" id="1_xuqfy"]
+[ext_resource type="Script" path="res://scenes/cannon.gd" id="2_script"]
+
+[node name="Cannon" type="Node3D"]
+script = ExtResource("2_script")
+
+[node name="HeightPivot" type="Node3D" parent="."]
+
+[node name="AnglePivot" type="Node3D" parent="HeightPivot"]
+
+[node name="Prop_Cannon" parent="HeightPivot/AnglePivot" instance=ExtResource("1_xuqfy")]
+
+[node name="Muzzle" type="Marker3D" parent="HeightPivot/AnglePivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 1.2)
