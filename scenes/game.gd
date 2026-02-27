@@ -9,6 +9,14 @@ enum CameraState {AIMING, FOLLOWING_BALL, RETURNING}
 
 const HUD_SCRIPT = preload("res://scenes/hud.gd")
 
+var TREE_SCENES: Array[PackedScene] = [
+	load("res://scenes/trees/normal_tree_1.tscn"),
+	load("res://scenes/trees/normal_tree_2.tscn"),
+	load("res://scenes/trees/normal_tree_3.tscn"),
+	load("res://scenes/trees/normal_tree_4.tscn"),
+	load("res://scenes/trees/normal_tree_5.tscn"),
+]
+
 @onready var cannon: Node3D = $Cannon
 @onready var camera: Camera3D = $Camera3D
 
@@ -27,6 +35,8 @@ func _ready() -> void:
 	cannon.ball_fired.connect(_on_ball_fired)
 	_update_camera_immediate()
 	hud.update_power(cannon.fire_power)
+
+	_spawn_trees()
 
 
 func _process(delta: float) -> void:
@@ -105,3 +115,48 @@ func _update_hud() -> void:
 			hud.update_state(tr("HUD_STATE_TRACKING"))
 		CameraState.RETURNING:
 			hud.update_state(tr("HUD_STATE_RETURNING"))
+
+
+# ── Árvores ──
+
+func _spawn_trees() -> void:
+	var tree_count := 60
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	var tree_container := Node3D.new()
+	tree_container.name = "Trees"
+	add_child(tree_container)
+
+	var placed := 0
+	var attempts := 0
+	while placed < tree_count and attempts < 500:
+		attempts += 1
+		var _maxDist = 20
+		var x: float = rng.randf_range(-_maxDist, _maxDist)
+		var z: float = rng.randf_range(-_maxDist, _maxDist)
+
+		if _is_clear_zone(x, z):
+			continue
+
+		var tree_scene: PackedScene = TREE_SCENES[rng.randi_range(0, TREE_SCENES.size() - 1)]
+		var tree: Node3D = tree_scene.instantiate()
+		tree.position = Vector3(x, 0, z)
+		#tree.rotation.y = rng.randf_range(0, TAU)
+		var s: float = rng.randf_range(100.0, 180.0)
+		tree.scale = Vector3(s, s, s)
+		tree_container.add_child(tree)
+		placed += 1
+
+
+func _is_clear_zone(x: float, z: float) -> bool:
+	# Zona do canhão e câmera
+	if Vector2(x, z).length() < 5.0:
+		return true
+	# Corredor de tiro (+Z, faixa estreita em X)
+	if z > 0 and abs(x) < 4.0:
+		return true
+	# Zona da câmera (atrás, -X perto do centro)
+	if x < -3.0 and abs(z) < 3.0:
+		return true
+	return false
