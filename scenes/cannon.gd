@@ -24,6 +24,7 @@ signal ball_fired(ball: RigidBody3D)
 var current_angle: float = 45.0
 var current_height: float = 0.0
 var can_fire: bool = true
+var _pedestal: CSGBox3D
 
 var PROJECTILE_SCENE: PackedScene = load("res://scenes/projectile.tscn")
 
@@ -31,6 +32,7 @@ var PROJECTILE_SCENE: PackedScene = load("res://scenes/projectile.tscn")
 func _ready() -> void:
 	current_angle = 45.0
 	current_height = 0.0
+	_create_pedestal()
 	_apply_transforms()
 
 
@@ -70,6 +72,23 @@ func _apply_transforms() -> void:
 		height_pivot.position.y = current_height
 	if angle_pivot:
 		angle_pivot.rotation_degrees.x = current_angle - 80
+	# Pedestal acompanha altura
+	if _pedestal:
+		var pedestal_h: float = current_height + 0.5 # mínimo visível
+		_pedestal.size = Vector3(0.8, pedestal_h, 0.8)
+		_pedestal.position.y = current_height / 2.0
+
+
+func _create_pedestal() -> void:
+	_pedestal = CSGBox3D.new()
+	_pedestal.size = Vector3(0.8, 0.5, 0.8)
+	_pedestal.position.y = 0.0
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.25, 0.28, 0.32)
+	mat.metallic = 0.6
+	mat.roughness = 0.4
+	_pedestal.material = mat
+	add_child(_pedestal)
 
 
 func _fire() -> void:
