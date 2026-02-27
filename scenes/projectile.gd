@@ -19,6 +19,7 @@ signal landed
 func _ready() -> void:
 	contact_monitor = true
 	max_contacts_reported = 4
+	body_entered.connect(_on_body_entered)
 
 
 func _physics_process(delta: float) -> void:
@@ -28,15 +29,17 @@ func _physics_process(delta: float) -> void:
 	if _age >= lifetime:
 		queue_free()
 		return
-
-	# Detectar quando a bola está quase parada
-	if _age > 0.5 and linear_velocity.length() < rest_speed:
+		
+	# Destrói depois de ficar parada se já pousou
+	if has_landed and linear_velocity.length() < rest_speed:
 		_rest_timer += delta
-		if _rest_timer >= rest_time and not has_landed:
-			has_landed = true
-			landed.emit()
-			# Espera um pouco e remove
-			await get_tree().create_timer(1.0).timeout
+		if _rest_timer >= rest_time:
 			queue_free()
 	else:
 		_rest_timer = 0.0
+
+
+func _on_body_entered(_body: Node) -> void:
+	if not has_landed:
+		has_landed = true
+		landed.emit()

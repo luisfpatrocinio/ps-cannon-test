@@ -1,11 +1,13 @@
 extends Node3D
 
-enum CameraState {AIMING, FOLLOWING_BALL, RETURNING}
+enum CameraState {AIMING, FOLLOWING_BALL, IMPACT, RETURNING}
 
 ## Offset da câmera em relação ao alvo
 @export var camera_offset: Vector3 = Vector3(-5, 2.5, 0)
 ## Velocidade de interpolação da câmera
 @export var camera_smooth_speed: float = 5.0
+## Tempo que a câmera fica fixa no ponto de impacto (segundos)
+@export var impact_hold_time: float = 3.5
 
 const HUD_SCRIPT = preload("res://scenes/hud.gd")
 
@@ -25,6 +27,11 @@ var camera_state: CameraState = CameraState.AIMING
 var follow_target: Node3D = null
 var _return_timer: float = 0.0
 
+# ── Impacto ──
+var _launch_position: Vector3 = Vector3.ZERO
+var _impact_timer: float = 0.0
+var _impact_label: Label3D = null
+
 
 func _ready() -> void:
 	# Instanciar HUD via código (sem .tscn)
@@ -39,14 +46,18 @@ func _ready() -> void:
 	_spawn_trees()
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_update_hud()
 
+
+func _physics_process(delta: float) -> void:
 	match camera_state:
 		CameraState.AIMING:
 			_camera_follow_cannon(delta)
 		CameraState.FOLLOWING_BALL:
 			_camera_follow_ball(delta)
+		CameraState.IMPACT:
+			_camera_hold_impact(delta)
 		CameraState.RETURNING:
 			_camera_return_to_cannon(delta)
 
@@ -60,14 +71,27 @@ func _camera_follow_cannon(delta: float) -> void:
 
 func _camera_follow_ball(delta: float) -> void:
 	if not is_instance_valid(follow_target):
-		camera_state = CameraState.RETURNING
-		_return_timer = 0.0
+		_begin_return()
 		return
 
 	var target_pos = follow_target.global_position
 	var desired = target_pos + camera_offset
 	camera.global_position = camera.global_position.lerp(desired, camera_smooth_speed * delta)
 	camera.look_at(target_pos, Vector3.UP)
+
+
+func _camera_hold_impact(_delta: float) -> void:
+	_impact_timer += _delta
+	# Câmera fica fixa no ponto de impacto — não move
+
+	# Fade out do label nos últimos 0.5s
+	if _impact_label and _impact_timer > impact_hold_time - 0.5:
+		var fade = clamp((impact_hold_time - _impact_timer) / 0.5, 0.0, 1.0)
+		_impact_label.modulate.a = fade
+
+	if _impact_timer >= impact_hold_time:
+		_cleanup_impact_label()
+		_begin_return()
 
 
 func _camera_return_to_cannon(delta: float) -> void:
@@ -89,19 +113,73 @@ func _update_camera_immediate() -> void:
 	camera.look_at(target_pos, Vector3.UP)
 
 
+func _begin_return() -> void:
+	follow_target = null
+	camera_state = CameraState.RETURNING
+	_return_timer = 0.0
+	hud.show_crosshair(true)
+
+
 func _on_ball_fired(ball: RigidBody3D) -> void:
+	# Limpar label de impacto anterior, se existir
+	_cleanup_impact_label()
+
+	_launch_position = ball.global_position
 	follow_target = ball
 	camera_state = CameraState.FOLLOWING_BALL
 	hud.flash_fire()
 	hud.show_crosshair(false)
 
-	# Quando a bola sair da árvore, volta a câmera
+	# Conectar sinal de pouso
+	ball.landed.connect(_on_ball_landed.bind(ball))
+
+	# Fallback: quando a bola sair da árvore, volta a câmera
 	ball.tree_exiting.connect(func():
-		follow_target = null
-		camera_state = CameraState.RETURNING
-		_return_timer = 0.0
-		hud.show_crosshair(true)
+		if camera_state == CameraState.FOLLOWING_BALL:
+			_begin_return()
 	)
+
+
+func _on_ball_landed(ball: RigidBody3D) -> void:
+	if not is_instance_valid(ball):
+		return
+
+	var impact_pos: Vector3 = ball.global_position
+	var distance: float = _launch_position.distance_to(impact_pos)
+
+	# Transição para estado de impacto
+	camera_state = CameraState.IMPACT
+	_impact_timer = 0.0
+
+	_create_impact_label(impact_pos, distance)
+
+
+func _create_impact_label(impact_pos: Vector3, distance: float) -> void:
+	_impact_label = Label3D.new()
+	_impact_label.text = "%.1f m" % distance
+	_impact_label.font_size = 72
+	_impact_label.pixel_size = 0.01
+	_impact_label.outline_size = 12
+	_impact_label.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	_impact_label.outline_modulate = Color(0.1, 0.1, 0.15, 0.9)
+	_impact_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_impact_label.no_depth_test = true
+	_impact_label.position = impact_pos + Vector3(0, 1.5, 0)
+
+	add_child(_impact_label)
+
+	# Animação de entrada: escala de 0 → 1
+	_impact_label.scale = Vector3.ZERO
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.tween_property(_impact_label, "scale", Vector3.ONE, 0.4)
+
+
+func _cleanup_impact_label() -> void:
+	if _impact_label and is_instance_valid(_impact_label):
+		_impact_label.queue_free()
+		_impact_label = null
 
 
 func _update_hud() -> void:
@@ -113,6 +191,8 @@ func _update_hud() -> void:
 			hud.update_state(tr("HUD_STATE_AIMING"))
 		CameraState.FOLLOWING_BALL:
 			hud.update_state(tr("HUD_STATE_TRACKING"))
+		CameraState.IMPACT:
+			hud.update_state(tr("HUD_STATE_IMPACT"))
 		CameraState.RETURNING:
 			hud.update_state(tr("HUD_STATE_RETURNING"))
 
@@ -132,7 +212,7 @@ func _spawn_trees() -> void:
 	var attempts := 0
 	while placed < tree_count and attempts < 500:
 		attempts += 1
-		var _maxDist = 20
+		var _maxDist = 50
 		var x: float = rng.randf_range(-_maxDist, _maxDist)
 		var z: float = rng.randf_range(-_maxDist, _maxDist)
 
