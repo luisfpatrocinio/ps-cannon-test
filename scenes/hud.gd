@@ -89,7 +89,7 @@ func _build_top_bar() -> void:
 	bar.add_child(hbox)
 
 	var title := Label.new()
-	title.text = "CANNON CONTROL SYSTEM"
+	title.text = tr("HUD_TITLE")
 	title.add_theme_color_override("font_color", Color(0.5, 0.7, 1.0, 0.8))
 	title.add_theme_font_size_override("font_size", 14)
 	hbox.add_child(title)
@@ -98,7 +98,7 @@ func _build_top_bar() -> void:
 	hbox.add_child(sep)
 
 	state_label = Label.new()
-	state_label.text = "AIMING"
+	state_label.text = tr("HUD_STATE_AIMING")
 	state_label.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
 	state_label.add_theme_font_size_override("font_size", 16)
 	hbox.add_child(state_label)
@@ -138,7 +138,7 @@ func _build_left_panel() -> void:
 
 	# Título do painel
 	var panel_title := Label.new()
-	panel_title.text = "PARAMETERS"
+	panel_title.text = tr("HUD_PARAMETERS")
 	panel_title.add_theme_color_override("font_color", Color(0.4, 0.65, 1.0, 0.9))
 	panel_title.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(panel_title)
@@ -147,7 +147,7 @@ func _build_left_panel() -> void:
 	vbox.add_child(HSeparator.new())
 
 	# --- ANGLE ---
-	var angle_header := _make_param_header("ANGLE", Color(0.3, 0.6, 1.0))
+	var angle_header := _make_param_header(tr("HUD_ANGLE"), Color(0.3, 0.6, 1.0))
 	angle_label = angle_header.get_child(1)
 	angle_label.add_theme_color_override("font_color", Color(0.6, 0.85, 1.0))
 	vbox.add_child(angle_header)
@@ -159,7 +159,7 @@ func _build_left_panel() -> void:
 	vbox.add_child(angle_bar)
 
 	# --- HEIGHT ---
-	var height_header := _make_param_header("HEIGHT", Color(0.2, 0.9, 0.4))
+	var height_header := _make_param_header(tr("HUD_HEIGHT"), Color(0.2, 0.9, 0.4))
 	height_label = height_header.get_child(1)
 	height_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))
 	vbox.add_child(height_header)
@@ -174,7 +174,7 @@ func _build_left_panel() -> void:
 	vbox.add_child(HSeparator.new())
 
 	# --- POWER ---
-	var power_header := _make_param_header("POWER", Color(1.0, 0.6, 0.2))
+	var power_header := _make_param_header(tr("HUD_POWER"), Color(1.0, 0.6, 0.2))
 	power_label = power_header.get_child(1)
 	power_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4))
 	power_label.text = "20"
@@ -210,9 +210,9 @@ func _build_bottom_controls() -> void:
 	hbox.add_theme_constant_override("separation", 30)
 	margin.add_child(hbox)
 
-	_add_control_hint(hbox, "Up/Down  Angle", Color(0.6, 0.75, 0.95, 0.9))
-	_add_control_hint(hbox, "W / S  Height", Color(0.6, 0.95, 0.7, 0.9))
-	_add_control_hint(hbox, "SPACE  Fire", Color(1.0, 0.75, 0.4, 0.9))
+	_add_control_hint(hbox, tr("HUD_CTRL_ANGLE"), Color(0.6, 0.75, 0.95, 0.9))
+	_add_control_hint(hbox, tr("HUD_CTRL_HEIGHT"), Color(0.6, 0.95, 0.7, 0.9))
+	_add_control_hint(hbox, tr("HUD_CTRL_FIRE"), Color(1.0, 0.75, 0.4, 0.9))
 
 	add_child(panel)
 

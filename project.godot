@@ -33,6 +33,14 @@ cannon_fire={
 ]
 }
 
+[autoload]
+
+LocalizationLoader="*res://scenes/localization_loader.gd"
+
+[internationalization]
+
+locale/fallback="en"
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

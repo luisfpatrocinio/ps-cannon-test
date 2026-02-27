@@ -100,8 +100,8 @@ func _update_hud() -> void:
 
 	match camera_state:
 		CameraState.AIMING:
-			hud.update_state("◎ AIMING")
+			hud.update_state(tr("HUD_STATE_AIMING"))
 		CameraState.FOLLOWING_BALL:
-			hud.update_state("● TRACKING")
+			hud.update_state(tr("HUD_STATE_TRACKING"))
 		CameraState.RETURNING:
-			hud.update_state("◌ RETURNING")
+			hud.update_state(tr("HUD_STATE_RETURNING"))
