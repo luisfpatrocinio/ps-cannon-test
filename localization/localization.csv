@@ -10,3 +10,9 @@ HUD_STATE_RETURNING,◌ RETURNING,◌ RETORNANDO
 HUD_CTRL_ANGLE,Up/Down  Angle,Cima/Baixo  Ângulo
 HUD_CTRL_HEIGHT,W / S  Height,W / S  Altura
 HUD_CTRL_FIRE,SPACE  Fire,ESPAÇO  Disparar
+MENU_GAME_TITLE,TRAJECTORY LAB,LABORATÓRIO DE TRAJETÓRIAS
+MENU_SUBTITLE,Master the physics of projectile motion,Domine a física do movimento de projéteis
+MENU_START,START,INICIAR
+MENU_QUIT,QUIT,SAIR
+MENU_VOLUME,Volume,Volume
+MENU_LANGUAGE,Language,Idioma

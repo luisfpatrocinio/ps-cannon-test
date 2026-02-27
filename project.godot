@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="ps cannon test"
-run/main_scene="res://scenes/world.tscn"
+run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+LocalizationLoader="*res://scenes/localization_loader.gd"
 
 [input]
 
@@ -33,13 +37,9 @@ cannon_fire={
 ]
 }
 
-[autoload]
-
-LocalizationLoader="*res://scenes/localization_loader.gd"
-
 [internationalization]
 
-locale/fallback="en"
+locale/translations=PackedStringArray("res://localization/localization.csv")
 
 [physics]
 
