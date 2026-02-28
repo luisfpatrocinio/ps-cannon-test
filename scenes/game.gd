@@ -241,7 +241,7 @@ func _spawn_trees() -> void:
 	var attempts := 0
 	while placed < tree_count and attempts < 500:
 		attempts += 1
-		var _maxDist = 50
+		var _maxDist = 100
 		var x: float = rng.randf_range(-_maxDist, _maxDist)
 		var z: float = rng.randf_range(-_maxDist, _maxDist)
 
