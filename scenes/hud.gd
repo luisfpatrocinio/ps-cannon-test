@@ -13,6 +13,7 @@ var crosshair: Control
 var _flash_timer: float = 0.0
 var _show_fire_flash: bool = false
 
+var _transition_rect: ColorRect
 
 func _ready() -> void:
 	_build_ui()
@@ -58,6 +59,24 @@ func show_crosshair(val: bool) -> void:
 	crosshair.visible = val
 
 
+func play_transition(fade_in_time: float = 0.3, hold_time: float = 0.1, fade_out_time: float = 0.3) -> Signal:
+	_transition_rect.visible = true
+	_transition_rect.modulate.a = 0.0
+	
+	var tween := create_tween()
+	# Fade out da visão (tela fica preta)
+	tween.tween_property(_transition_rect, "modulate:a", 1.0, fade_in_time)
+	# Fica preta um momentinho
+	tween.tween_interval(hold_time)
+	# Fade in da visão (tela volta a ficar transparente)
+	tween.tween_property(_transition_rect, "modulate:a", 0.0, fade_out_time)
+	
+	tween.finished.connect(func(): _transition_rect.visible = false)
+	
+	# Retorna um signal que pode ser esperado quando o fade-in estiver completo (tela totalmente preta/momento ideal pra corte)
+	return get_tree().create_timer(fade_in_time).timeout
+
+
 # ============================================================
 # Construção da UI
 # ============================================================
@@ -67,6 +86,16 @@ func _build_ui() -> void:
 	_build_left_panel()
 	_build_bottom_controls()
 	_build_crosshair()
+	_build_transition_rect()
+
+
+func _build_transition_rect() -> void:
+	_transition_rect = ColorRect.new()
+	_transition_rect.color = Color.BLACK
+	_transition_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_transition_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_transition_rect.visible = false
+	add_child(_transition_rect)
 
 
 func _build_top_bar() -> void:

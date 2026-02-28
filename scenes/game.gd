@@ -1,6 +1,6 @@
 extends Node3D
 
-enum CameraState {AIMING, FOLLOWING_BALL, IMPACT, RETURNING}
+enum CameraState {AIMING, FOLLOWING_BALL, IMPACT, TRANSITIONING, RETURNING}
 
 ## Offset da câmera em relação ao alvo
 @export var camera_offset: Vector3 = Vector3(-5, 2.5, 0)
@@ -58,6 +58,8 @@ func _physics_process(delta: float) -> void:
 			_camera_follow_ball(delta)
 		CameraState.IMPACT:
 			_camera_hold_impact(delta)
+		CameraState.TRANSITIONING:
+			pass
 		CameraState.RETURNING:
 			_camera_return_to_cannon(delta)
 
@@ -99,7 +101,8 @@ func _camera_return_to_cannon(delta: float) -> void:
 
 	var target_pos = cannon.global_position + Vector3(0, cannon.get_height(), 0)
 	var desired = target_pos + camera_offset
-	camera.global_position = camera.global_position.lerp(desired, camera_smooth_speed * 0.5 * delta)
+	# Aceleramos um pouco o retorno visual
+	camera.global_position = camera.global_position.lerp(desired, camera_smooth_speed * 1.5 * delta)
 	camera.look_at(target_pos, Vector3.UP)
 
 	# Quando estiver perto o suficiente, volta ao estado AIMING
@@ -114,6 +117,15 @@ func _update_camera_immediate() -> void:
 
 
 func _begin_return() -> void:
+	if camera_state == CameraState.RETURNING or camera_state == CameraState.TRANSITIONING:
+		return
+	
+	camera_state = CameraState.TRANSITIONING
+	
+	# Inicia o fade to black e espera a tela ficar preta
+	await hud.play_transition(0.3, 0.1, 0.5)
+	
+	# Quando a tela está preta, começamos o retorno da câmera
 	follow_target = null
 	camera_state = CameraState.RETURNING
 	_return_timer = 0.0
@@ -220,7 +232,7 @@ func _update_hud() -> void:
 			hud.update_state(tr("HUD_STATE_AIMING"))
 		CameraState.FOLLOWING_BALL:
 			hud.update_state(tr("HUD_STATE_TRACKING"))
-		CameraState.IMPACT:
+		CameraState.IMPACT, CameraState.TRANSITIONING:
 			hud.update_state(tr("HUD_STATE_IMPACT"))
 		CameraState.RETURNING:
 			hud.update_state(tr("HUD_STATE_RETURNING"))
