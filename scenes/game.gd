@@ -145,13 +145,42 @@ func _on_ball_landed(ball: RigidBody3D) -> void:
 		return
 
 	var impact_pos: Vector3 = ball.global_position
+	# Força a posição Y para ficar rente ao chão (0.0 ou quase)
+	impact_pos.y = 0.05
+	
 	var distance: float = _launch_position.distance_to(impact_pos)
 
 	# Transição para estado de impacto
 	camera_state = CameraState.IMPACT
 	_impact_timer = 0.0
 
+	_create_impact_marker(impact_pos)
 	_create_impact_label(impact_pos, distance)
+
+
+func _create_impact_marker(pos: Vector3) -> void:
+	var marker := MeshInstance3D.new()
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = 0.6
+	cylinder.bottom_radius = 0.6
+	cylinder.height = 0.1
+	marker.mesh = cylinder
+	
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.1, 0.1, 0.1, 0.8) # Cinza escuro, como uma cratera
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 1.0
+	marker.material_override = mat
+	
+	marker.position = pos
+	add_child(marker)
+	
+	# Animação simulando impacto (expansão)
+	marker.scale = Vector3.ZERO
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(marker, "scale", Vector3.ONE, 0.3)
 
 
 func _create_impact_label(impact_pos: Vector3, distance: float) -> void:
