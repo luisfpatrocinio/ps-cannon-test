@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://b0movrutn583p"]
+
+[ext_resource type="Material" uid="uid://dq7pib3ftfrkw" path="res://scenes/crt_material.tres" id="1"]
+
+[node name="CRTFX" type="CanvasLayer" unique_id=947762593]
+layer = 128
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=649995108]
+material = ExtResource("1")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2

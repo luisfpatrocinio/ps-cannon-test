@@ -19,6 +19,12 @@ config/icon="uid://dfahifqsrepdi"
 [autoload]
 
 LocalizationLoader="*res://scenes/localization_loader.gd"
+CRTFX="*uid://b0movrutn583p"
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=540
 
 [input]
 

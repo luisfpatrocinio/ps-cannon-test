@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://dq7pib3ftfrkw"]
+
+[ext_resource type="Shader" uid="uid://b8hsu7luutk3e" path="res://scenes/crt_shader.gdshader" id="1"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/screen_width = 960.0
+shader_parameter/screen_height = 540.0
+shader_parameter/BarrelPower = 1.05
+shader_parameter/color_bleeding = 1.1
+shader_parameter/bleeding_range_x = 1.0
+shader_parameter/bleeding_range_y = 1.0
+shader_parameter/lines_distance = 4.0
+shader_parameter/scan_size = 1.0
+shader_parameter/scanline_alpha = 0.5
+shader_parameter/lines_velocity = 30.0
