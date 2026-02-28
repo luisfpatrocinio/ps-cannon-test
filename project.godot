@@ -13,7 +13,8 @@ config_version=5
 config/name="ps cannon test"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/image="uid://dfahifqsrepdi"
+config/icon="uid://dfahifqsrepdi"
 
 [autoload]
 
