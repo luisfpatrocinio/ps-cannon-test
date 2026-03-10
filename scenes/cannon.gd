@@ -23,6 +23,7 @@ signal ball_fired(ball: RigidBody3D)
 
 var current_angle: float = 45.0
 var current_height: float = 0.0
+var last_joy_axis: float = 0.0
 var can_fire: bool = true
 var _pedestal: CSGBox3D
 
@@ -37,9 +38,26 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_handle_analog_input()
 	_handle_angle_input(delta)
 	_handle_height_input(delta)
 	_handle_fire_input()
+
+
+func _handle_analog_input() -> void:
+	if not Input.get_connected_joypads().is_empty():
+		var axis_val := Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+		
+		# Ignoramos pequenos jitters do conversor ADC e só atualizamos se mecher o eixo
+		if abs(axis_val - last_joy_axis) > 0.02:
+			last_joy_axis = axis_val
+			
+			# O joystick vai de -1 a 1, normalizamos para 0.0 a 1.0 (onde -1.0 empurrado=100%, 1.0 puxado=0%)
+			var normalized_val := (-axis_val + 1.0) / 2.0
+			
+			current_angle = min_angle + normalized_val * (max_angle - min_angle)
+			current_angle = clamp(current_angle, min_angle, max_angle)
+			_apply_transforms()
 
 
 func _handle_angle_input(delta: float) -> void:
@@ -53,12 +71,17 @@ func _handle_angle_input(delta: float) -> void:
 
 
 func _handle_height_input(delta: float) -> void:
-	if Input.is_action_pressed("cannon_height_up"):
+	if Input.is_action_pressed("cannon_height_up") or Input.is_action_pressed("cannon_shift"):
 		current_height += height_speed * delta
 	if Input.is_action_pressed("cannon_height_down"):
 		current_height -= height_speed * delta
 
-	current_height = clamp(current_height, min_height, max_height)
+	# Se estourar a altura máxima, volta para zero (looping)
+	if current_height >= max_height:
+		current_height = min_height
+	else:
+		current_height = max(current_height, min_height)
+		
 	_apply_transforms()
 
 
@@ -95,6 +118,10 @@ func _fire() -> void:
 	can_fire = false
 
 	var ball: RigidBody3D = PROJECTILE_SCENE.instantiate()
+	
+	# Gera uma cor vermelha bem vibrante para a trajetória
+	ball.set("trail_color", Color(1.0, 0.1, 0.1))
+	
 	get_tree().current_scene.add_child(ball)
 
 	ball.global_position = muzzle.global_position
